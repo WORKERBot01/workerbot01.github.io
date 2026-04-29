@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WORKERBot_01 - Home</title>
+    <title>WORKERBot_01 - Achievements</title>
     <style>
         * {
             margin: 0;
@@ -92,6 +91,7 @@
         .nav-links li:nth-child(2) { animation-delay: 0.4s; }
         .nav-links li:nth-child(3) { animation-delay: 0.6s; }
         .nav-links li:nth-child(4) { animation-delay: 0.8s; }
+        .nav-links li:nth-child(5) { animation-delay: 1s; }
 
         @keyframes fadeInSlideLeft {
             0% {
@@ -138,68 +138,60 @@
             width: 80%;
         }
 
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Page Header */
+        .page-header {
+            padding: 150px 0 80px;
             text-align: center;
-            color: white;
             position: relative;
             overflow: hidden;
         }
 
-        .hero::before {
+        .page-header::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,0 1000,300 1000,1000 0,700"/></svg>');
-            animation: heroFloat 8s ease-in-out infinite;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.03)" points="0,0 1000,300 1000,1000 0,700"/></svg>');
+            animation: headerFloat 8s ease-in-out infinite;
         }
 
-        @keyframes heroFloat {
+        @keyframes headerFloat {
             0%, 100% { 
-                transform: translateY(0px) rotate(0deg);
+                transform: translateY(0px);
                 opacity: 0.5;
             }
             50% { 
-                transform: translateY(-30px) rotate(1deg);
+                transform: translateY(-20px);
                 opacity: 0.7;
             }
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
+        .page-title {
+            font-size: 3.5rem;
             margin-bottom: 1rem;
             opacity: 0;
-            animation: heroTitleReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
-                       gradientShift 3s ease-in-out infinite;
+            animation: titleReveal 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
             background: linear-gradient(45deg, #ffffff, #26e6ee, #00b8d4);
             background-size: 200% 200%;
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            animation: titleReveal 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
+                       gradientShift 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
         }
 
-        @keyframes heroTitleReveal {
+        @keyframes titleReveal {
             0% {
                 opacity: 0;
-                transform: translateY(50px) scale(0.8);
-                filter: blur(10px);
+                transform: translateY(30px);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
+                transform: translateY(0);
             }
         }
 
@@ -212,63 +204,19 @@
             }
         }
 
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: #b0b0b0;
             opacity: 0;
-            animation: fadeInUp 1.2s ease 0.5s forwards;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .cta-button {
-            display: inline-block;
-            padding: 16px 40px;
-            background: linear-gradient(45deg, rgba(38, 230, 238, 0.2), rgba(0, 184, 212, 0.2));
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            border: 2px solid rgba(38, 230, 238, 0.5);
-            font-weight: 600;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            opacity: 0;
-            animation: fadeInUp 1.2s ease 1s forwards;
+            animation: fadeInUp 1s ease 0.3s forwards;
             position: relative;
-            overflow: hidden;
-        }
-
-        .cta-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .cta-button:hover::before {
-            left: 100%;
-        }
-
-        .cta-button:hover {
-            background: linear-gradient(45deg, rgba(38, 230, 238, 0.4), rgba(0, 184, 212, 0.4));
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(38, 230, 238, 0.3);
-            border-color: rgba(38, 230, 238, 0.8);
+            z-index: 1;
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(50px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -276,45 +224,83 @@
             }
         }
 
-        /* Particle System */
-        .particle {
+        /* Main Content */
+        .main-content {
+            padding: 60px 0 100px;
+            background: #1a1a2e;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .achievement-card {
+            background: rgba(38, 230, 238, 0.05);
+            border: 1px solid rgba(38, 230, 238, 0.2);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-left: 5px solid #26e6ee;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 0;
+            transform: translateX(-50px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement-card::before {
+            content: '';
             position: absolute;
-            pointer-events: none;
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #26e6ee, #00b8d4);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        @keyframes particle-float {
-            0% {
-                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) translateX(100px) scale(1) rotate(360deg);
-                opacity: 0;
-            }
+        .achievement-card.visible {
+            opacity: 1;
+            transform: translateX(0);
         }
 
-        @keyframes particle-float-reverse {
-            0% {
-                transform: translateY(100vh) translateX(0) scale(0) rotate(360deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) translateX(-100px) scale(1) rotate(0deg);
-                opacity: 0;
-            }
+        .achievement-card.visible::before {
+            transform: scaleY(1);
+        }
+
+        .achievement-card:hover {
+            transform: translateX(15px) scale(1.02);
+            border-left-color: #00b8d4;
+            box-shadow: 0 20px 60px rgba(38, 230, 238, 0.3);
+        }
+
+        .achievement-date {
+            color: #26e6ee;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            text-shadow: 0 0 10px rgba(38, 230, 238, 0.3);
+        }
+
+        .achievement-card h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            transition: color 0.4s;
+        }
+
+        .achievement-card:hover h3 {
+            color: #26e6ee;
+        }
+
+        .achievement-card p {
+            color: #b0b0b0;
+            line-height: 1.8;
+            font-size: 1.05rem;
         }
 
         /* Footer */
@@ -369,13 +355,12 @@
                 display: none;
             }
 
-            .hero h1 {
-                font-size: 2.8rem;
+            .page-title {
+                font-size: 2.5rem;
             }
 
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
+            .achievements-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -385,17 +370,29 @@
 
     <header>
         <nav class="container">
-            <a href="index.html" class="logo">United Nations // Sustainable Development Goals/a>
+            <a href="index.html" class="logo">My Achievements</a>
             <ul class="nav-links">
-                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="skills.html">Skills</a></li>
+                <li><a href="achievements.html" class="active">Achievements</a></li>
+                <li><a href="contact.html">Contact</a></li>
             </ul>
         </nav>
     </header>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>PLACEHOLDER</h1>
-            <p>PLACEHOLDER</p>
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Achievements & Milestones</h1>
+            <p class="page-subtitle">Celebrating My Journey</p>
+        </div>
+    </section>
+
+    <section class="main-content">
+        <div class="container">
+            <div class="achievements-grid">
+               <p>PLACEHOLDR</p>
+            </div>
         </div>
     </section>
 
@@ -406,64 +403,6 @@
     </footer>
 
     <script>
-        // Particle system
-        function createParticle() {
-            const particle = document.createElement('div');
-            const size = Math.random() * 8 + 4;
-            const isReverse = Math.random() > 0.5;
-            const colors = ['rgba(38, 230, 238, 0.8)', 'rgba(0, 184, 212, 0.6)', 'rgba(255, 255, 255, 0.4)'];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
-            particle.className = 'particle';
-            particle.style.cssText = `
-                position: absolute;
-                width: ${size}px;
-                height: ${size}px;
-                background: ${color};
-                border-radius: 50%;
-                pointer-events: none;
-                animation: ${isReverse ? 'particle-float-reverse' : 'particle-float'} ${8 + Math.random() * 4}s linear infinite;
-                box-shadow: 0 0 ${size * 2}px ${color};
-            `;
-            
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 8 + 's';
-            
-            document.querySelector('.hero').appendChild(particle);
-            
-            setTimeout(() => {
-                if (particle.parentNode) {
-                    particle.remove();
-                }
-            }, 12000);
-        }
-
-        function startParticleSystem() {
-            createParticle();
-            setTimeout(startParticleSystem, Math.random() * 400 + 200);
-        }
-        
-        startParticleSystem();
-
-        // Mouse parallax effect
-        const hero = document.querySelector('.hero');
-        const heroContent = document.querySelector('.hero-content');
-        
-        hero.addEventListener('mousemove', (e) => {
-            const rect = hero.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            const y = (e.clientY - rect.top) / rect.height;
-            
-            const moveX = (x - 0.5) * 30;
-            const moveY = (y - 0.5) * 30;
-            
-            heroContent.style.transform = `translate(${moveX}px, ${moveY}px)`;
-        });
-        
-        hero.addEventListener('mouseleave', () => {
-            heroContent.style.transform = 'translate(0, 0)';
-        });
-
         // Scroll progress
         function updateScrollProgress() {
             const scrollProgress = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
@@ -496,6 +435,25 @@
             }
             
             lastScrollY = scrollY;
+        });
+
+        // Animate achievement cards on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.achievement-card').forEach((card, index) => {
+            card.style.transitionDelay = `${0.5 + index * 0.2}s`;
+            observer.observe(card);
         });
     </script>
 </body>
