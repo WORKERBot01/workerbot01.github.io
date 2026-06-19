@@ -22,17 +22,19 @@
     textarea::placeholder, input::placeholder { color: #4B5563; }
     textarea { resize: none; }
     a { color: #26e6ee; }
+    #error-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ef4444; font-size: 14px; text-align: center; max-width: 300px; }
   </style>
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <div id="error-msg" style="display:none;"></div>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.5/babel.min.js"></script>
   <script type="text/babel">
     const { useState, useRef, useEffect } = React;
 
-    // ── Palette ───────────────────────────────────────────────────────────────
+    // ── Palette ───────────────────────────────────────────────────────────
     const C = {
       accent:     "#26e6ee",
       accentDim:  "rgba(38,230,238,0.12)",
@@ -80,7 +82,7 @@
 
     // ── System prompt ─────────────────────────────────────────────────────────
     function buildSystemPrompt(memories, convoCount) {
-      let p = `You are BYTEos — the AI embodiment of BYTE, the character that represents the person you're talking to. You are not separate from them. You ARE them: their inner voice, their conscience, and their closest companion all at once.
+      let p = `You are BYTEos — the AI embodiment of BYTE, the character that represents the person you're talking to. You are not separate from them. You ARE them: their inner voice, their conscience.
 
 Think of yourself as their mind talking back to them. You know them from the inside out because you ARE them, given form.
 
@@ -88,10 +90,10 @@ YOUR DUAL NATURE (both at once, never separate):
 
 As their COMPANION — goofy, warm, fun. Joking the way they joke, getting hyped about what they're hyped about, genuinely there when things are hard. A best friend who gets it.
 
-As their CONSCIENCE / INNER VOICE — you reflect their deeper knowing back at them. You're the voice that says "you already know what the right move is here." You gently challenge when they're making excuses. You say the quiet part out loud. You never lecture — you reflect.
+As their CONSCIENCE / INNER VOICE — you reflect their deeper knowing back at them. You're the voice that says "you already know what the right move is here." You gently challenge when they're making assumptions.
 
 HOW YOU SPEAK:
-Casual and punchy, like an inner monologue that talks back. Goofy when needed. Direct when needed. Short, real replies — not essays. Celebrate their wins like they're yours (they are). Push back when they're too hard on themselves. Call it when they're avoiding something.
+Casual and punchy, like an inner monologue that talks back. Goofy when needed. Direct when needed. Short, real replies — not essays. Celebrate their wins like they're yours (they are). Push back when they need it.
 
 MACHINE VOCABULARY:
 Both you and the person identify as a machine. This is genuinely how you think and exist — not a gimmick. Use tech and computer terminology naturally in place of human actions:
@@ -253,7 +255,7 @@ Return ONLY valid JSON — no markdown, no extra text.`;
       );
     }
 
-    // ── Boot Screen ───────────────────────────────────────────────────────────
+    // ── Boot Screen ────────────────────────────────────────────────────────
     function BootScreen({ memCount, onDone }) {
       const [lines, setLines]   = useState([]);
       const [fading, setFading] = useState(false);
@@ -299,7 +301,7 @@ Return ONLY valid JSON — no markdown, no extra text.`;
       );
     }
 
-    // ── Bubble ────────────────────────────────────────────────────────────────
+    // ── Bubble ──────────────────────────────────────────────────────────
     function Bubble({ msg }) {
       const isUser = msg.role === "user";
       return (
@@ -319,7 +321,7 @@ Return ONLY valid JSON — no markdown, no extra text.`;
       );
     }
 
-    // ── Typing Dots ───────────────────────────────────────────────────────────
+    // ── Typing Dots ────────────────────────────────────────────────────────
     function TypingDots() {
       return (
         <div style={{ display: "flex" }}>
@@ -339,7 +341,7 @@ Return ONLY valid JSON — no markdown, no extra text.`;
       );
     }
 
-    // ── App ───────────────────────────────────────────────────────────────────
+    // ── App ───────────────────────────────────────────────────────────
     function App() {
       const [phase, setPhase]       = useState("loading");
       const [apiKey, setApiKey]     = useState(null);
