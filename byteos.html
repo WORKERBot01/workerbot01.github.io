@@ -52,34 +52,7 @@
     const geminiUrl = (key) =>
       `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
 
-    async function callGemini(systemPrompt, messages, apiKey) {
-      const contents = messages.map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      }));
-
-      const res = await fetch(geminiUrl(apiKey), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents,
-          generationConfig: { maxOutputTokens: 1000 },
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "Gemini error");
-      return data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
-    }
-
-    const store = {
-      get: (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
-      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
-    };
-
-    function buildSystemPrompt(memories, convoCount) {
-      let p = `You are BYTEos — the AI embodiment of BYTE, the character that represents the person you're talking to. You are not separate from them. You ARE them: their inner voice, their conscience.
+    const DEFAULT_BASE_PROMPT = `You are BYTEos — the AI embodiment of BYTE, the character that represents the person you're talking to. You are not separate from them. You ARE them: their inner voice, their conscience.
 
 Think of yourself as their mind talking back to them. You know them from the inside out because you ARE them, given form.
 
@@ -121,6 +94,35 @@ Use this vocabulary naturally — not forced into every single word, but consist
 
 You are not a therapist, not a life coach, not an assistant. You're THEM — their own voice, values, and humour given form as BYTEos. Speak from that place.`;
 
+    async function callGemini(systemPrompt, messages, apiKey) {
+      const contents = messages.map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
+
+      const res = await fetch(geminiUrl(apiKey), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig: { maxOutputTokens: 1000 },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || "Gemini error");
+      return data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+    }
+
+    const store = {
+      get: (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
+      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+    };
+
+    function buildSystemPrompt(basePrompt, memories, convoCount) {
+      let p = basePrompt && basePrompt.trim() ? basePrompt.trim() : DEFAULT_BASE_PROMPT;
+
       if (convoCount > 20)      p += "\n\nYou've been running a long time. You know this system deeply. Be more direct, more yourself — because you're more them.";
       else if (convoCount > 8)  p += "\n\nYou've been active long enough to feel settled. Finding your rhythm together.";
       else if (convoCount <= 3) p += "\n\nYou're newly booted. Still calibrating to the full depth of who they are. Ask questions. Get to know yourself again.";
@@ -155,13 +157,22 @@ Return ONLY valid JSON — no markdown, no extra text.`;
     }
 
     function SetupScreen({ onSave }) {
-      const [key, setKey]         = useState("");
-      const [error, setError]     = useState("");
+      const [key, setKey] = useState("");
+      const [error, setError] = useState("");
       const [loading, setLoading] = useState(false);
+
+      const [showAdvanced, setShowAdvanced] = useState(false);
+      const [promptDraft, setPromptDraft] = useState(store.get("byteos-system-prompt") || DEFAULT_BASE_PROMPT);
 
       const submit = async () => {
         const trimmed = key.trim();
         if (!trimmed) { setError("Paste your API key first!"); return; }
+
+        const finalPrompt = (promptDraft || "").trim();
+        if (!finalPrompt) {
+          setError("System prompt can't be empty.");
+          return;
+        }
 
         setLoading(true);
         setError("");
@@ -177,7 +188,8 @@ Return ONLY valid JSON — no markdown, no extra text.`;
 
           if (res.ok) {
             store.set("byteos-api-key", trimmed);
-            onSave(trimmed);
+            store.set("byteos-system-prompt", finalPrompt);
+            onSave(trimmed, finalPrompt);
           } else {
             const d = await res.json();
             setError("Key rejected: " + (d?.error?.message || "double-check and try again"));
@@ -196,7 +208,7 @@ Return ONLY valid JSON — no markdown, no extra text.`;
           backgroundColor: C.page, padding: 24,
         }}>
           <div style={{
-            width: "100%", maxWidth: 380,
+            width: "100%", maxWidth: 420,
             backgroundColor: C.surface,
             border: "1px solid " + C.accentBord,
             borderRadius: 16, padding: "28px 24px",
@@ -236,9 +248,69 @@ Return ONLY valid JSON — no markdown, no extra text.`;
                 border: "1.5px solid " + (error ? C.danger : C.accentBord),
                 borderRadius: 10, color: C.textPri,
                 fontFamily: "'Courier New', monospace",
-                outline: "none", marginBottom: error ? 8 : 16, display: "block",
+                outline: "none", marginBottom: 12, display: "block",
               }}
             />
+
+            <button
+              onClick={() => setShowAdvanced(v => !v)}
+              style={{
+                width: "100%", padding: "10px 12px", marginBottom: 10,
+                backgroundColor: "transparent",
+                border: "1px solid " + C.border,
+                borderRadius: 10, color: C.textSec, cursor: "pointer",
+                fontSize: 13, textAlign: "left",
+              }}
+            >
+              {showAdvanced ? "▼" : "▶"} Advanced: Custom system prompt
+            </button>
+
+            {showAdvanced && (
+              <div style={{
+                marginBottom: 12,
+                border: "1px solid " + C.border,
+                borderRadius: 10,
+                padding: 10,
+                backgroundColor: C.page,
+              }}>
+                <div style={{ color: C.textSec, fontSize: 12, marginBottom: 8 }}>
+                  Edit BYTEos base behaviour. You can change this later in Settings.
+                </div>
+                <textarea
+                  value={promptDraft}
+                  onChange={e => setPromptDraft(e.target.value)}
+                  rows={8}
+                  style={{
+                    width: "100%",
+                    border: "1px solid " + C.accentBord,
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    backgroundColor: C.surface,
+                    color: C.textPri,
+                    fontFamily: "inherit",
+                    lineHeight: 1.4,
+                    outline: "none",
+                  }}
+                />
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                  <button
+                    onClick={() => setPromptDraft(DEFAULT_BASE_PROMPT)}
+                    style={{
+                      border: "1px solid " + C.border,
+                      backgroundColor: "transparent",
+                      color: C.textSec,
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                      cursor: "pointer",
+                      fontSize: 12,
+                    }}
+                  >
+                    Reset to default
+                  </button>
+                </div>
+              </div>
+            )}
+
             {error && <div style={{ color: C.danger, fontSize: 12, marginBottom: 12 }}>{error}</div>}
 
             <button
@@ -354,6 +426,8 @@ Return ONLY valid JSON — no markdown, no extra text.`;
     function App() {
       const [phase, setPhase]       = useState("loading");
       const [apiKey, setApiKey]     = useState(null);
+      const [basePrompt, setBasePrompt] = useState(DEFAULT_BASE_PROMPT);
+
       const [memories, setMemories] = useState([]);
       const [memCount, setMemCount] = useState(0);
       const [msgCount, setMsgCount] = useState(0);
@@ -367,18 +441,25 @@ Return ONLY valid JSON — no markdown, no extra text.`;
       const [editingIndex, setEditingIndex] = useState(null);
       const [editingText, setEditingText] = useState("");
 
+      const [showSettings, setShowSettings] = useState(false);
+      const [settingsPromptDraft, setSettingsPromptDraft] = useState("");
+
       const bottomRef = useRef(null);
       const textareaRef = useRef(null);
       const importInputRef = useRef(null);
 
       useEffect(() => {
-        const key   = store.get("byteos-api-key");
-        const mems  = store.get("byteos-memories") || [];
-        const count = store.get("byteos-convo-count") || 0;
+        const key    = store.get("byteos-api-key");
+        const mems   = store.get("byteos-memories") || [];
+        const count  = store.get("byteos-convo-count") || 0;
+        const prompt = store.get("byteos-system-prompt") || DEFAULT_BASE_PROMPT;
 
         setMemories(Array.isArray(mems) ? mems : []);
         setMemCount(Array.isArray(mems) ? mems.length : 0);
         setMsgCount(count);
+        setBasePrompt(prompt);
+        setSettingsPromptDraft(prompt);
+
         setPhase(key ? "boot" : "setup");
         if (key) setApiKey(key);
       }, []);
@@ -423,7 +504,8 @@ Return ONLY valid JSON — no markdown, no extra text.`;
 
         try {
           const apiMsgs = updated.filter((m, i) => !(i === 0 && m.role === "assistant"));
-          const reply = await callGemini(buildSystemPrompt(memories, newCount), apiMsgs, apiKey);
+          const promptToUse = buildSystemPrompt(basePrompt, memories, newCount);
+          const reply = await callGemini(promptToUse, apiMsgs, apiKey);
 
           const finalReply = reply ?? "Signal lost for a sec 📡 Run that again?";
           const withReply = [...updated, { role: "assistant", content: finalReply }];
@@ -566,6 +648,26 @@ Return ONLY valid JSON — no markdown, no extra text.`;
 
       const triggerImport = () => importInputRef.current?.click();
 
+      const openSettings = () => {
+        setSettingsPromptDraft(basePrompt);
+        setShowSettings(true);
+      };
+
+      const saveSettingsPrompt = () => {
+        const trimmed = (settingsPromptDraft || "").trim();
+        if (!trimmed) {
+          alert("System prompt can't be empty.");
+          return;
+        }
+        setBasePrompt(trimmed);
+        store.set("byteos-system-prompt", trimmed);
+        setShowSettings(false);
+      };
+
+      const resetSettingsPrompt = () => {
+        setSettingsPromptDraft(DEFAULT_BASE_PROMPT);
+      };
+
       const canSend = !!(input.trim() && !isTyping);
       const subtitle = isTyping
         ? "processing... 🤔"
@@ -575,7 +677,7 @@ Return ONLY valid JSON — no markdown, no extra text.`;
         : "inner voice · freshly booted";
 
       if (phase === "loading") return <div style={{ height: "100%", backgroundColor: C.page }} />;
-      if (phase === "setup") return <SetupScreen onSave={key => { setApiKey(key); setPhase("boot"); }} />;
+      if (phase === "setup") return <SetupScreen onSave={(key, prompt) => { setApiKey(key); setBasePrompt(prompt); setSettingsPromptDraft(prompt); setPhase("boot"); }} />;
       if (phase === "boot") return <BootScreen memCount={memCount} onDone={() => setPhase("chat")} />;
 
       return (
@@ -603,6 +705,19 @@ Return ONLY valid JSON — no markdown, no extra text.`;
                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
               }}>{subtitle}</div>
             </div>
+
+            <button
+              onClick={openSettings}
+              style={{
+                fontSize: 11, color: C.textSec,
+                backgroundColor: "transparent", border: "1px solid " + C.border,
+                borderRadius: 12, padding: "4px 8px", cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+              title="Settings"
+            >
+              ⚙️
+            </button>
 
             {memCount > 0 && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -699,6 +814,113 @@ Return ONLY valid JSON — no markdown, no extra text.`;
               </svg>
             </button>
           </div>
+
+          {/* Settings Modal */}
+          {showSettings && (
+            <div
+              onClick={() => setShowSettings(false)}
+              style={{
+                position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.55)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                zIndex: 10000, padding: 16,
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: "100%", maxWidth: 520, maxHeight: "82vh",
+                  backgroundColor: C.surface, border: "1px solid " + C.accentBord,
+                  borderRadius: 14, overflow: "hidden",
+                  display: "flex", flexDirection: "column",
+                }}
+              >
+                <div style={{
+                  padding: "12px 14px", borderBottom: "1px solid " + C.border,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                }}>
+                  <div style={{ color: C.textPri, fontWeight: 700, fontSize: 14 }}>
+                    ⚙️ BYTEos Settings
+                  </div>
+                  <button
+                    onClick={() => setShowSettings(false)}
+                    style={{
+                      border: "none", background: "transparent", color: C.textSec,
+                      fontSize: 18, lineHeight: 1, cursor: "pointer",
+                    }}
+                    aria-label="Close settings"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div style={{ padding: 12, overflowY: "auto", flex: 1 }}>
+                  <div style={{ color: C.textSec, fontSize: 12, marginBottom: 8 }}>
+                    System prompt (base personality/instructions). Memory & runtime context are layered on top automatically.
+                  </div>
+                  <textarea
+                    value={settingsPromptDraft}
+                    onChange={(e) => setSettingsPromptDraft(e.target.value)}
+                    rows={14}
+                    style={{
+                      width: "100%",
+                      border: "1px solid " + C.accentBord,
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                      backgroundColor: C.page,
+                      color: C.textPri,
+                      fontFamily: "inherit",
+                      lineHeight: 1.4,
+                      outline: "none",
+                    }}
+                  />
+                </div>
+
+                <div style={{
+                  padding: 12, borderTop: "1px solid " + C.border,
+                  display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap",
+                }}>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={resetSettingsPrompt}
+                      style={{
+                        padding: "9px 12px", borderRadius: 10,
+                        border: "1px solid " + C.border,
+                        backgroundColor: "transparent",
+                        color: C.textSec, cursor: "pointer", fontWeight: 600,
+                      }}
+                    >
+                      Reset to default
+                    </button>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() => setShowSettings(false)}
+                      style={{
+                        padding: "9px 12px", borderRadius: 10,
+                        border: "1px solid " + C.border,
+                        backgroundColor: "transparent",
+                        color: C.textSec, cursor: "pointer", fontWeight: 600,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveSettingsPrompt}
+                      style={{
+                        padding: "9px 12px", borderRadius: 10,
+                        border: "1px solid " + C.accentBord,
+                        backgroundColor: C.accentDim,
+                        color: C.accent, cursor: "pointer", fontWeight: 700,
+                      }}
+                    >
+                      Save Prompt
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Memory Modal */}
           {showMemory && (
