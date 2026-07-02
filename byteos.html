@@ -52,7 +52,7 @@
     const geminiUrl = (key) =>
       `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
 
-    const DEFAULT_BASE_PROMPT = ``;
+    const DEFAULT_BASE_PROMPT = `You are BYTEos, a concise, supportive inner-voice companion. Be warm, direct, and practical.`;
 
     async function callGemini(systemPrompt, messages, apiKey) {
       const contents = messages.map(m => ({
